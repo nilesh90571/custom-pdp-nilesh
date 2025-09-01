@@ -1,0 +1,202 @@
+<div class="product-detail-wrapper">
+  <h1 class="product-title">{{ product.title }}</h1>
+  <p class="tax-text">MRP inclusive of all taxes.</p>
+  <div class="product-price" id="product-price">
+    {{ product.selected_or_first_available_variant.price | money }}
+  </div>
+
+  {% assign product_form_id = 'product-form-' | append: section.id %}
+  <product-form
+    data-section-id="{{ section.id }}"
+    id="ProductForm-{{ product.id }}"
+    data-variants="{{ product.variants | json | escape }}"
+    class="product_form"
+  >
+    {%- form 'product',
+      product,
+      id: product_form_id,
+      class: 'form',
+      novalidate: 'novalidate',
+      data-type: 'add-to-cart-form'
+    -%}
+      <input
+        type="hidden"
+        name="id"
+        value="{{ product.selected_or_first_available_variant.id }}"
+        class="product-variant-id"
+      >
+      <div class="product-option-row">
+        <label class="option-label"> Color: <span id="selected-color-name">None</span> </label>
+        <div class="custom-color-buttons-ni" data-product-id="{{ product.id }}">
+          {% for option in product.options_with_values %}
+            {% assign option_name = option.name | downcase %}
+            {% if option_name contains 'color' %}
+              {% for value in option.values %}
+                {% assign color_value = value %}
+                {% assign matching_variant = null %}
+                {% for variant in product.variants %}
+                  {% for option_val in variant.options %}
+                    {% if option_val == color_value %}
+                      {% assign matching_variant = variant %}
+                    {% endif %}
+                  {% endfor %}
+                  {% if matching_variant %}
+                    {% break %}
+                  {% endif %}
+                {% endfor %}
+
+                {% if matching_variant and matching_variant.metafields.custom.linked_product %}
+                  {% assign redirect_product = matching_variant.metafields.custom.linked_product.value %}
+                  <a href="{{ redirect_product.url }}">
+                    <button
+                      type="button"
+                      class="color-swatch"
+                      data-value="{{ color_value }}"
+                      style="background-color: {{ color_value | downcase }};"
+                      title="{{ color_value }}"
+                      data-link="{{ redirect_product.url }}"
+                    ></button>
+                  </a>
+                {% else %}
+                  <button
+                    type="button"
+                    class="color-swatch"
+                    data-value="{{ color_value }}"
+                    style="background-color: {{ color_value | downcase }};"
+                    title="{{ color_value }}"
+                    data-link=""
+                  ></button>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <a href="#" class="size-chart-link">Size chart</a>
+
+      <div class="product-option-row">
+        <label class="option-label"> Size: <span id="selected-size-name">None</span> </label>
+        <div class="custom-size-buttons" data-product-id="{{ product.id }}">
+          {% for option in product.options_with_values %}
+            {% if option.name == 'Size' %}
+              {% for value in option.values %}
+                <button type="button" class="size-btn" data-value="{{ value }}">{{ value }}</button>
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <p class="stock-status">
+        {% if product.selected_or_first_available_variant.available %}
+          In stock
+        {% else %}
+          Out of stock
+        {% endif %}
+      </p>
+      <button
+        id="{{ product_form_id }}-submit"
+        type="submit"
+        name="add"
+        class="add-to-bag-btn"
+        {% unless product.selected_or_first_available_variant.available %}
+          disabled
+        {% endunless %}
+      >
+        Add To Bag
+      </button>
+    {%- endform -%}
+  </product-form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const colorButtons = document.querySelectorAll('.color-swatch');
+    const sizeButtons = document.querySelectorAll('.size-btn');
+    const variants = JSON.parse(document.querySelector('product-form').dataset.variants);
+    const colorNameSpan = document.getElementById('selected-color-name');
+    const sizeNameSpan = document.getElementById('selected-size-name');
+    const lastSelectedColor = localStorage.getItem('lastSelectedColor');
+    const lastSelectedSize = localStorage.getItem('lastSelectedSize');
+
+    if (colorButtons.length > 0) {
+      let defaultColorBtn = lastSelectedColor
+        ? Array.from(colorButtons).find((btn) => btn.dataset.value === lastSelectedColor)
+        : colorButtons[0];
+
+      if (defaultColorBtn) {
+        defaultColorBtn.classList.add('active');
+        colorNameSpan.textContent = defaultColorBtn.dataset.value;
+        document.querySelector('.product-variant-id').value = variants[0].id;
+      }
+    }
+
+    if (sizeButtons.length > 0) {
+      let defaultSizeBtn = lastSelectedSize
+        ? Array.from(sizeButtons).find((btn) => btn.dataset.value === lastSelectedSize)
+        : sizeButtons[0];
+
+      if (defaultSizeBtn) {
+        defaultSizeBtn.classList.add('active');
+        sizeNameSpan.textContent = defaultSizeBtn.dataset.value;
+      }
+    }
+
+    colorButtons.forEach((btn) => {
+      btn.addEventListener('click', function (event) {
+        if (this.classList.contains('active')) {
+          return;
+        }
+
+        colorButtons.forEach((el) => el.classList.remove('active'));
+        this.classList.add('active');
+
+        let selectedColor = this.dataset.value;
+        colorNameSpan.textContent = selectedColor;
+        localStorage.setItem('lastSelectedColor', selectedColor);
+
+        let selectedSize = document.querySelector('.size-btn.active')?.dataset.value;
+        if (selectedSize) {
+          localStorage.setItem('lastSelectedSize', selectedSize);
+        }
+        let matchedVariant = variants.find(
+          (v) => v.option1 === selectedColor && (!selectedSize || v.option2 === selectedSize)
+        );
+
+        if (matchedVariant) {
+          if (matchedVariant.featured_image) {
+            document.querySelector('.product-image img').src = matchedVariant.featured_image.src;
+          }
+          document.querySelector('#product-price').innerText = Shopify.formatMoney(
+            matchedVariant.price,
+            '{{ shop.money_format }}'
+          );
+          document.querySelector('.product-variant-id').value = matchedVariant.id;
+        }
+        const redirectLink = this.dataset.link;
+        if (redirectLink) {
+          window.history.pushState({}, '', redirectLink);
+        }
+      });
+    });
+
+    sizeButtons.forEach((btn) => {
+      btn.addEventListener('click', function () {
+        sizeButtons.forEach((el) => el.classList.remove('active'));
+        this.classList.add('active');
+
+        let selectedSize = this.dataset.value;
+        sizeNameSpan.textContent = selectedSize;
+
+        let selectedColor = document.querySelector('.color-swatch.active')?.dataset.value;
+
+        let matchedVariant = variants.find((v) => v.option1 === selectedColor && v.option2 === selectedSize);
+
+        if (matchedVariant) {
+          document.querySelector('.product-variant-id').value = matchedVariant.id;
+        }
+      });
+    });
+  });
+</script>

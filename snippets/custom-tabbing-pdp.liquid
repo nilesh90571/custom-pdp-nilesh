@@ -1,0 +1,160 @@
+<div class="custom-pdp-tabs">
+  <p>
+    Textured black denim mini dress with a collared neckline, short sleeves, front button-down closure, and dual patch
+    pockets.
+  </p>
+
+  <button class="accordion-btn">
+    Product Details
+    <span class="arrow">▼</span>
+  </button>
+  <div class="accordion-content">
+    <div class="product-description">
+      {{ product.description }}
+    </div>
+  </div>
+
+  <div class="tabbing-wrapper">
+    <div class="tab-buttons">
+      <button class="tab-btn active" data-tab="shipping">Shipping Details</button>
+      <button class="tab-btn" data-tab="returns">Returns</button>
+      <button class="tab-btn" data-tab="size">Size Help</button>
+    </div>
+
+    <div class="tab-content active" id="shipping">
+      <p>Orders are processed within 24 hours of being placed.</p>
+      <ul>
+        <li>We provide free shipping on all prepaid orders above 1990/-</li>
+        <li>A flat fee of Rupees 50 is applied on prepaid orders below 1990/-</li>
+        <li>A flat fee of Rupees 150 is applied on all Cash on Delivery orders.</li>
+        <li>
+          Delivery times are as follows: Shipping to metro cities takes 3-4 working days, and to tier 1 cities takes 5-7
+          working days.
+        </li>
+      </ul>
+      <a href="/policies/shipping-policy" class="policy-btn">Go to Shipping Policy</a>
+    </div>
+
+    <div class="tab-content" id="returns">
+      <p>
+        At Bluer we prioritize your shopping experience and are committed to ensuring your satisfaction with your
+        purchase.
+      </p>
+      <ul>
+        <li>If you are not satisfied with your product, you may return it within 7 days of delivery.</li>
+        <li>Refunds will be issued in the form of store credit, which can be utilized for future purchases.</li>
+        <li>Please note that return are not permitted on items purchased at sale or discounted price.</li>
+        <li>We do not provide an exchange/refund policy.</li>
+      </ul>
+      <a href="/policies/return-policy" class="policy-btn">Go to Shipping Policy</a>
+    </div>
+
+    <div class="tab-content" id="size">
+      <ul>
+        <li>At Bluer, each garment features a unique size chart available on our website.</li>
+        <li>We kindly advise you to order based on your body measurements.</li>
+        <li>If you are uncertain about your size, it is recommended to choose one size larger.</li>
+        <li>Please note that garment measurements may vary by up to half an inch.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<style>
+  .accordion-btn {
+    width: 100%;
+    text-align: left;
+    background: #fff;
+    border: 1px solid #000;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s ease;
+  }
+  .accordion-btn .arrow {
+    transition: transform 0.3s ease;
+  }
+  .accordion-btn.active .arrow {
+    transform: rotate(180deg);
+  }
+  .accordion-content {
+    display: none;
+    border: 1px solid #000;
+    border-top: none;
+    padding: 20px;
+  }
+  .accordion-content.active {
+    display: block;
+  }
+
+  .tabbing-wrapper {
+    margin-top: 20px;
+  }
+  .tab-buttons {
+    display: flex;
+    border-bottom: 1px solid #000;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #000;
+    border-bottom: none;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+  }
+  .tab-btn.active {
+    background: #fff;
+    border-bottom: 1px solid #fff;
+  }
+  .tab-content {
+    display: none;
+    padding: 20px;
+    border: 1px solid #000;
+    border-top: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+
+  .policy-btn {
+    display: block;
+    margin-top: 15px;
+    padding: 12px;
+    text-align: center;
+    background: #000;
+    color: #fff;
+    text-decoration: none;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const accordionBtn = document.querySelector('.accordion-btn');
+    const accordionContent = document.querySelector('.accordion-content');
+
+    accordionBtn.addEventListener('click', () => {
+      accordionBtn.classList.toggle('active');
+      accordionContent.classList.toggle('active');
+    });
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach((b) => b.classList.remove('active'));
+        tabContents.forEach((c) => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+  });
+</script>
+
+

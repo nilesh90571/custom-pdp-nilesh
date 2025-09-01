@@ -1,0 +1,66 @@
+<div class="product-media-wrapper">
+  <div class="custom-pdp-ni">
+    <div class="main-carousel">
+      {% for media in product.media %}
+        <div class="carousel-cell">
+          <img
+            src="{{ media | image_url: width: 1000 }}"
+            alt="{{ media.alt | escape }}"
+            width="{{ media.width }}"
+            height="{{ media.height }}"
+          >
+        </div>
+      {% endfor %}
+    </div>
+    <div class="thumb-carousel">
+      {% assign total = product.media | size %}
+      {% for media in product.media %}
+        {% assign next_index = forloop.index0 | plus: 1 %}
+        {% if next_index >= total %}
+          {% assign next_index = 0 %}
+        {% endif %}
+        <div class="thumb-cell">
+          <img
+            src="{{ product.media[next_index] | image_url: width: 300 }}"
+            alt="{{ product.media[next_index].alt | escape }}"
+            width="{{ media[next_index].width }}"
+            height="{{ media[next_index].height }}"
+          >
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% render 'custom-tabbing-pdp' %}
+</div>
+
+
+<script>
+  window.addEventListener('load', function () {
+    var mainCarousel = document.querySelector('.main-carousel');
+    var thumbCarousel = document.querySelector('.thumb-carousel');
+
+    var flktyMain = new Flickity(mainCarousel, {
+      wrapAround: true,
+      pageDots: false,
+      prevNextButtons: true,
+      cellAlign: 'center',
+      imagesLoaded: true
+    });
+
+    var flktyThumb = new Flickity(thumbCarousel, {
+      wrapAround: true,
+      pageDots: false,
+      prevNextButtons: true,
+      cellAlign: 'left',
+      imagesLoaded: true
+    });
+
+    flktyThumb.on('select', function () {
+      flktyMain.select(flktyThumb.selectedIndex);
+    });
+
+    flktyMain.on('select', function () {
+      flktyThumb.select(flktyMain.selectedIndex);
+    });
+  });
+</script>
